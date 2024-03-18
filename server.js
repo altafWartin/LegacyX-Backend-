@@ -32,11 +32,25 @@ app.use("/api/like", likeRouter);
 app.use("/api/share", shareRouter);
 app.use("/api/collection", collectionRouter);
 app.use("/api/subscription", subscriptionRouter);
+app.get("/", (req, res) => res.json({ msg: "Welcome to TEST page" }));
 
 dbConnect();
 
+
 app.use("/storage", express.static("storage"));
 app.use(errorHandler);
+
+
+var admin = require("firebase-admin");
+
+var serviceAccount = require("./lxdc-c7799-firebase-adminsdk-brksr-bdbaaab111.json");
+
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount)
+});
+
+
+
 
 let server = instance.createServer(credentials, app)
 
