@@ -49,7 +49,7 @@ app.use(errorHandler);
 //   credential: admin.credential.cert(serviceAccount)
 // });
 
-const secretKey = 'demo_secret_key_for_testing_only';
+// const secretKey = 'demo_secret_key_for_testing_only';
 
 
 
