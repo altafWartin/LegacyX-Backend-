@@ -3,7 +3,7 @@ const { isProtected, credentials } = require('./config/ssl')
 const express = require("express");
 const dbConnect = require("./database/index");
 const instance = isProtected ? require('https') : require('http')
-const { PORT } = require("./config/index");
+// const { PORT } = require("./config/index");
 const authRouter = require("./routes/auth");
 const entityRouter = require("./routes/entity");
 const likeRouter = require("./routes/like");
@@ -39,5 +39,7 @@ app.use("/storage", express.static("storage"));
 app.use(errorHandler);
 
 let server = instance.createServer(credentials, app)
+
+let PORT = 4400
 
 server.listen(PORT, console.log(`Backend is running on port: ${PORT}`));
