@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "1067471015212",
+    "project_id": "lxdc-c7799",
+    "storage_bucket": "lxdc-c7799.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1067471015212:android:8c55795ac88b1f60457089",
+        "android_client_info": {
+          "package_name": "com.legacyx.legacyx"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1067471015212-l215ufavj7bg92at30dtniqcpkehbpvo.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.legacyx.legacyx",
+            "certificate_hash": "b5fe89f4c2858440ac846f72e2091116f29d9242"
+          }
+        },
+        {
+          "client_id": "1067471015212-levano8p563vkppinhlb0rgc8fif9ri4.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCklyRJaW3SdlZLLt65mcZ7ZF7xbcMTpZc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1067471015212-levano8p563vkppinhlb0rgc8fif9ri4.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "1067471015212-7ar4hb1f34gb66taam78jromrslll8hf.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.legacyx.legacyx.legacyx"
+              }
+            }
+          ]
+        }
+      },
+      "admob_app_id": "ca-app-pub-3181587402268279~8041299638"
+    }
+  ],
+  "configuration_version": "1"
+}
