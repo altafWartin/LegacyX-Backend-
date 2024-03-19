@@ -41,14 +41,15 @@ app.use("/storage", express.static("storage"));
 app.use(errorHandler);
 
 
-var admin = require("firebase-admin");
+// var admin = require("firebase-admin");
 
-var serviceAccount = require("./lxdc-c7799-firebase-adminsdk-brksr-bdbaaab111.json");
+// // var serviceAccount = require("./lxdc-c7799-firebase-adminsdk-brksr-bdbaaab111.json");
 
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount)
-});
+// admin.initializeApp({
+//   credential: admin.credential.cert(serviceAccount)
+// });
 
+// const secretKey = 'demo_secret_key_for_testing_only';
 
 
 
@@ -56,4 +57,6 @@ let server = instance.createServer(credentials, app)
 
 let PORT = 4400
 
-server.listen(PORT, console.log(`Backend is running on port: ${PORT}`));
+server.listen(PORT, console.log(`Server is running on http://localhost:${PORT}`)
+);
+
