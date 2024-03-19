@@ -7,6 +7,16 @@ const validationSchema = require("../validation/validationSchema");
 const { sendMail } = require("../util/email");
 const stripe = require("../config/stripe");
 
+var admin = require("firebase-admin");
+
+var serviceAccount = require("../lxdc-c7799-firebase-adminsdk-brksr-bdbaaab111.json");
+
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount),
+});
+
+const { body, validationResult } = require("express-validator");
+
 const authController = {
   async register(req, res, next) {
     // 1.Validate user input
@@ -165,6 +175,44 @@ const authController = {
         .json({ message: "Admin login successful", user, accessToken });
     } else {
       res.status(401).json({ error: "Invalid email or password" });
+    }
+  },
+
+  async sendNotification(req, res, next) {
+    try {
+      // Destructure notification details from req.body
+      const { notificationType, notificationText, userIds } = req.body;
+
+      // Fetch users' device tokens from the database
+      const users = await User.find({ _id: { $in: userIds } });
+      const deviceTokens = users.flatMap((user) => user.device_tokens);
+
+      // Prepare the FCM message
+      const message = {
+        notification: {
+          title: notificationType,
+          body: notificationText,
+        },
+        tokens: deviceTokens,
+      };
+
+      // Send the push notification
+      admin
+        .messaging()
+        .sendMulticast(message)
+        .then((response) => {
+          console.log("Successfully sent message:", response);
+          return res
+            .status(200)
+            .json({ message: "Notification sent successfully" });
+        })
+        .catch((error) => {
+          console.error("Error sending message:", error);
+          return res.status(500).json({ error: "Failed to send notification" });
+        });
+    } catch (err) {
+      console.error("Error:", err);
+      return res.status(500).json({ error: "Server error" });
     }
   },
 
@@ -417,11 +465,13 @@ const authController = {
     }
   },
   async getPorfile(req, res, next) {
+    console.log("getProfile");
     //getting user from request (auth middleware)
     let user = req.user;
 
     try {
       user = await User.findById(user._id).lean();
+      console.log(user);
 
       if (!user) {
         const error = {
@@ -449,6 +499,22 @@ const authController = {
     try {
       const users = await User.find();
       res.json(users);
+    } catch (err) {
+      res.status(500).json({ message: err.message });
+    }
+  },
+  async getSingleProfile(req, res, next) {
+    console.log("getProfileById");
+    const userId = req.params.id; // Assuming the user ID is passed as a route parameter
+
+    try {
+      const user = await User.findById(userId);
+
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      res.json(user);
     } catch (err) {
       res.status(500).json({ message: err.message });
     }

@@ -15,7 +15,7 @@ router.get("/media/:categoryId", user, entityController.getMediaByCategory);
 router.get("/feed", user, entityController.getAllFeed);
 
 // get all by user
-router.get("/user/:userId", user, entityController.getAllByUser);
+router.get("/user/:userId",  entityController.getAllByUser);
 
 // create new category
 router.post("/create-category", entityController.createCategory);

@@ -40,10 +40,13 @@ router.post("/update-profile", auth, authController.updateProfile);
 
 // update password
 router.post("/update-password", auth, authController.updatePassword);
+router.post("/send-notification",  authController.sendNotification);
 
-router.get("/profile", auth, authController.getPorfile);
+router.get("/profile", authController.getPorfile);
 
-router.get("/allProfile", auth, authController.getallPorfile);
+router.get("/allProfile", authController.getallPorfile);
+router.get('/singleProfile/:id', authController.getSingleProfile);
+
 
 router.get("/delete-account", auth, authController.deleteAccount);
 
