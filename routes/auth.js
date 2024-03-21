@@ -10,6 +10,7 @@ router.get("/test", (req, res) => res.json({ msg: "Welcome to TEST page" }));
 
 //register
 router.post("/register", authController.register);
+router.post("/registerUsingFirbase", authController.registerUsingFirbase);
 
 //verify-otp
 router.post("/verify-otp", auth, authController.verifyOTP);

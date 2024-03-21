@@ -5,15 +5,16 @@ const { Schema } = mongoose;
 
 const userSchema = new Schema(
   {
-    username: { type: String, required: true },
-    password: { type: String, required: true },
-    otp: { type: String, required: true },
-    profileImage: { type: String, required: false },
-    device_tokens: { type: String }, // Changed to array of strings
-    coverImage: { type: String, required: false },
-    email: { type: String, required: true },
-    verified: { type: Boolean, required: true },
-    promoCode: { type: String, required: false },
+    uid:{type: String},
+    username: { type: String,  },
+    password: { type: String,  },
+    otp: { type: String,  },
+    profileImage: { type: String,  },
+    device_tokens: { type: String }, 
+    coverImage: { type: String,  },
+    email: { type: String,  },
+    verified: { type: Boolean,  },
+    promoCode: { type: String,  },
     facebook: { type: String },
     instagram: { type: String },
     twitter: { type: String },

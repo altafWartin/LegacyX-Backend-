@@ -9,11 +9,20 @@ const stripe = require("../config/stripe");
 
 var admin = require("firebase-admin");
 
-var serviceAccount = require("../lxdc-c7799-firebase-adminsdk-brksr-bdbaaab111.json");
+const serviceAccount = require("../lxdc-c7799-9c537a3a7148.json");
 
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount),
-});
+// Check if Firebase Admin SDK has been initialized before initializing it again
+if (!admin.apps.length) {
+  admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount),
+  });
+}
+
+
+// // Now you can use getAuth
+// const auth = admin.auth();
+
+
 
 const { body, validationResult } = require("express-validator");
 
@@ -87,6 +96,71 @@ const authController = {
       token: accessToken,
     });
   },
+  async registerUsingFirbase(req, res, next) {
+    // 1.Validate user input
+
+   
+    // 3.If username or email already exist__ return error
+    const {  email, device_tokens } = req.body;
+    console.log( email,  device_tokens);
+    let accessToken;
+    try {
+      const numberInUse = await User.exists({ email });
+      console.log(numberInUse);
+      if (numberInUse) {
+        const user = await User.findOne({ _id: numberInUse._id });
+        console.log(user);
+        if (user.verified) {
+          const error = {
+            status: 409,
+            message: "Email already registered, choose another email!",
+          };
+          return next(error);
+        } else {
+          accessToken = JWTService.signAccessToken({
+            _id: user._id,
+          });
+          return res.status(201).json({
+            message: 'Email already registered',
+            userData:user,
+            token: accessToken,
+          });
+        }
+      }
+    } catch (error) {
+      return next(error);
+    }
+  
+    let userData;
+    try {
+      // 5.Store User data in db
+      try {
+        userData = await admin.auth().getUserByEmail(email);
+      } catch (error) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+
+
+      const newUser = new User({ uid: userData.uid, email: userData.email, username: userData.displayName, profileImage: userData.photoURL });
+      await newUser.save();
+      console.log(newUser);
+
+      //generate token
+      accessToken = JWTService.signAccessToken({
+        _id: user._id,
+      });
+    } catch (error) {
+      return next(error);
+    }
+
+    return res.status(201).json({
+      message: 'User created successfully',
+      userData:newUser,
+      token: accessToken,
+    });
+  },
+
+ 
 
   async login(req, res, next) {
     // 1. Validate user Input
@@ -183,9 +257,12 @@ const authController = {
       // Destructure notification details from req.body
       const { notificationType, notificationText, userIds } = req.body;
 
+      console.log(notificationType, notificationText, userIds);
       // Fetch users' device tokens from the database
       const users = await User.find({ _id: { $in: userIds } });
       const deviceTokens = users.flatMap((user) => user.device_tokens);
+
+      console.log(users, deviceTokens, "hh");
 
       // Prepare the FCM message
       const message = {

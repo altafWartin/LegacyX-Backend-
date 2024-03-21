@@ -14,11 +14,11 @@
       },
       "oauth_client": [
         {
-          "client_id": "1067471015212-l215ufavj7bg92at30dtniqcpkehbpvo.apps.googleusercontent.com",
+          "client_id": "1067471015212-gr34m51sfvdq18ntfu958u3eop8tctc0.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
             "package_name": "com.legacyx.legacyx",
-            "certificate_hash": "b5fe89f4c2858440ac846f72e2091116f29d9242"
+            "certificate_hash": "5e8f16062ea3cd2c4a0d547876baa6f38cabf625"
           }
         },
         {
@@ -39,7 +39,7 @@
               "client_type": 3
             },
             {
-              "client_id": "1067471015212-7ar4hb1f34gb66taam78jromrslll8hf.apps.googleusercontent.com",
+              "client_id": "1067471015212-23j850ququvlo7dnlffg6k6q8tc1g92v.apps.googleusercontent.com",
               "client_type": 2,
               "ios_info": {
                 "bundle_id": "com.legacyx.legacyx.legacyx"

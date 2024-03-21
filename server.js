@@ -1,8 +1,8 @@
 /** @format */
-const { isProtected, credentials } = require('./config/ssl')
+const { isProtected, credentials } = require("./config/ssl");
 const express = require("express");
 const dbConnect = require("./database/index");
-const instance = isProtected ? require('https') : require('http')
+const instance = isProtected ? require("https") : require("http");
 // const { PORT } = require("./config/index");
 const authRouter = require("./routes/auth");
 const entityRouter = require("./routes/entity");
@@ -14,15 +14,18 @@ const subscriptionController = require("./controllers/subscriptionController");
 
 const errorHandler = require("./middlewares/errorHandler");
 const cookieParser = require("cookie-parser");
-const cors = require('cors');
+const cors = require("cors");
 const app = express();
 
 // Allow all origins
 app.use(cors());
 
-
-app.post('/webhook', express.raw({ type: 'application/json' }), subscriptionController.stripeWebhook)
-app.get('/success', subscriptionController.success)
+app.post(
+  "/webhook",
+  express.raw({ type: "application/json" }),
+  subscriptionController.stripeWebhook
+);
+app.get("/success", subscriptionController.success);
 app.use(express.static("uploads"));
 app.use(cookieParser());
 app.use(express.json());
@@ -36,79 +39,123 @@ app.get("/", (req, res) => res.json({ msg: "Welcome to TEST page" }));
 
 dbConnect();
 
-   
 app.use("/storage", express.static("storage"));
 app.use(errorHandler);
 
 
-// var admin = require("firebase-admin");
+let server = instance.createServer(credentials, app);
 
-// var serviceAccount = require("./lxdc-c7799-firebase-adminsdk-brksr-bdbaaab111.json");
+let PORT = 4400;
 
-// admin.initializeApp({
-//   credential: admin.credential.cert(serviceAccount)
-// });
-
-
-// const User = require("./models/user");
-// const { body, validationResult } = require("express-validator");
-
-// const secretKey = 'demo_secret_key_for_testing_only';
-
-// API endpoint for sending push notifications
-// app.post(
-//     "/send-notification",
-//     [
-//       body("notificationType").notEmpty(),
-//       body("notificationText").notEmpty(),
-//       body("userIds").isArray(),
-//       body("userIds.*").isMongoId(),
-//     ],
-//     async (req, res) => {
-//       try {
-//         // Check for validation errors
-//         const errors = validationResult(req);
-//         if (!errors.isEmpty()) {
-//           return res.status(400).json({ errors: errors.array() });
-//         }
-  
-//         const { notificationType, notificationText, userIds } = req.body;
-  
-//         // Fetch users' device tokens from the database
-//         const users = await User.find({ _id: { $in: userIds } });
-//         const deviceTokens = users.flatMap((user) => user.device_tokens);
-  
-//         // Prepare the FCM message
-//         const message = {
-//           notification: {
-//             title: notificationType,
-//             body: notificationText,
-//           },
-//           tokens: deviceTokens
-//         };
-  
-//         // Send the push notification
-//         admin.messaging().sendMulticast(message)
-//           .then((response) => {
-//             console.log("Successfully sent message:", response);
-//             return res.status(200).json({ message: "Notification sent successfully" });
-//           })
-//           .catch((error) => {
-//             console.error("Error sending message:", error);
-//             return res.status(500).json({ error: "Failed to send notification" });
-//           });
-//       } catch (err) {
-//         console.error("Error:", err);
-//         return res.status(500).json({ error: "Server error" });
-//       }
-//     }
-//   );
-
-
-let server = instance.createServer(credentials, app)
-
-let PORT = 4400
-
-server.listen(PORT, console.log(`Server is running on http://localhost:${PORT}`)
+server.listen(
+  PORT,
+  console.log(`Server is running on http://localhost:${PORT}`)
 );
 
+const admin = require("firebase-admin");
+
+// Initialize Firebase Admin SDK with your service account credentials
+
+const serviceAccount = require("./lxdc-c7799-9c537a3a7148.json");
+
+// Check if Firebase Admin SDK has been initialized before initializing it again
+if (!admin.apps.length) {
+  admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount),
+  });
+}
+
+async function sendPushNotification(deviceToken, title, body) {
+  try {
+    const message = {
+      notification: {
+        title: title,
+        body: body,
+      },
+      token: deviceToken,
+    };
+
+    const response = await admin.messaging().send(message);
+    console.log("Successfully sent message:", response);
+    return response;
+  } catch (error) {
+    console.error("Error sending message:", error);
+    throw error;
+  }
+}
+
+app.get("/testt", async (req, res, next) => {
+  try {
+    const deviceToken =
+      "ctlbW8pKSW65bVrgFguvlI:APA91bF0b5MuJmXDrA11zIjN6r-TZZ_8CP9bE1i_93-coywlONns_espyQL6SFAYGRzZuhXVwFLujPk358EwkgC62YfsKCOsjrKFq-crjTIyGqCP7sW3EZUjRjJTcQURsfe0no2Z6neL";
+    const title = "Test Notification";
+    const body = "This is a test notification from your Node.js server.";
+
+    await sendPushNotification(deviceToken, title, body);
+
+    res.status(200).send("Notification sent successfully!");
+  } catch (error) {
+    console.error("Failed to send push notification:", error);
+    res.status(500).send("Failed to send push notification");
+  }
+});
+
+// API endpoint for creating a user
+
+
+const User = require("./models/user");
+
+
+// // API endpoint to create user and save in MongoDB
+// app.post('/createUser', async (req, res) => {
+//   try {
+//     const { email } = req.body;
+//     const userData = await getUserData(email);
+
+//     if (userData) {
+//       const newUser = new User({ uid: userData.uid, email: userData.email, username: userData.displayName, profileImage: userData.photoURL });
+//       await newUser.save();
+//       console.log(newUser);
+//       res.status(201).json({ message: 'User created successfully', user: newUser });
+//     } else {
+//       res.status(404).json({ error: 'User not found' });
+//     }
+//   } catch (error) {
+//     console.error('Error:', error);
+//     res.status(500).json({ error: 'Internal server error' });
+//   }
+// });
+
+// // Function to get user data by email
+// async function getUserData(email) {
+//   try {
+//     const userRecord = await admin.auth().getUserByEmail(email);
+//     return userRecord.toJSON();
+//   } catch (error) {
+//     console.error('Error fetching user data:', error);
+//     return null;
+//   }
+// }
+
+
+
+// API endpoint to create user and save in MongoDB
+app.post('/createUser', async (req, res) => {
+  try {
+    const { email } = req.body;
+    let userData;
+    try {
+      userData = await admin.auth().getUserByEmail(email);
+    } catch (error) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    const newUser = new User({ uid: userData.uid, email: userData.email, username: userData.displayName, profileImage: userData.photoURL });
+    await newUser.save();
+    console.log(newUser);
+    res.status(201).json({ message: 'User created successfully', user: newUser });
+  } catch (error) {
+    console.error('Error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
