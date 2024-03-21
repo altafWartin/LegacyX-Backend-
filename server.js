@@ -142,7 +142,7 @@ const User = require("./models/user");
 // API endpoint to create user and save in MongoDB
 app.post('/createUser', async (req, res) => {
   try {
-    const { email } = req.body;
+    const { email } = req.body;    
     let userData;
     try {
       userData = await admin.auth().getUserByEmail(email);
