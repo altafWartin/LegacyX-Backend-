@@ -96,6 +96,10 @@ const authController = {
       token: accessToken,
     });
   },
+
+
+
+  
   async registerUsingFirbase(req, res, next) {
     // 1.Validate user input
 

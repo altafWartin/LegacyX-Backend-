@@ -83,6 +83,10 @@ async function sendPushNotification(deviceToken, title, body) {
   }
 }
 
+app.get("/", async (req, res) => {
+  res.status(200).send("Welcome");
+})
+
 app.get("/testt", async (req, res, next) => {
   try {
     const deviceToken =
