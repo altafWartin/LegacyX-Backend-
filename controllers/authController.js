@@ -122,7 +122,7 @@ const authController = {
           });
           return res.status(201).json({
             message: 'Email already registered',
-            userData:user,
+            user:user,
             token: accessToken,
           });
         }
@@ -155,7 +155,7 @@ const authController = {
 
     return res.status(201).json({
       message: 'User created successfully',
-      userData:newUser,
+      user:newUser,
       token: accessToken,
     });
   },
@@ -255,9 +255,9 @@ const authController = {
   async sendNotification(req, res, next) {
     try {
       // Destructure notification details from req.body
-      const { notificationType, notificationText, userIds } = req.body;
+      const { notificationType, notificationText, userIds, } = req.body;
 
-      console.log(notificationType, notificationText, userIds);
+      console.log(notificationType, notificationText, userIds,"test");
       // Fetch users' device tokens from the database
       const users = await User.find({ _id: { $in: userIds } });
       const deviceTokens = users.flatMap((user) => user.device_tokens);

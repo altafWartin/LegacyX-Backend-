@@ -42,7 +42,6 @@ dbConnect();
 app.use("/storage", express.static("storage"));
 app.use(errorHandler);
 
-
 let server = instance.createServer(credentials, app);
 
 let PORT = 4400;
@@ -102,9 +101,7 @@ app.get("/testt", async (req, res, next) => {
 
 // API endpoint for creating a user
 
-
 const User = require("./models/user");
-
 
 // // API endpoint to create user and save in MongoDB
 // app.post('/createUser', async (req, res) => {
@@ -137,25 +134,30 @@ const User = require("./models/user");
 //   }
 // }
 
-
-
 // API endpoint to create user and save in MongoDB
-app.post('/createUser', async (req, res) => {
+app.post("/createUser", async (req, res) => {
   try {
-    const { email } = req.body;    
+    const { email } = req.body;
     let userData;
     try {
       userData = await admin.auth().getUserByEmail(email);
     } catch (error) {
-      return res.status(404).json({ error: 'User not found' });
+      return res.status(404).json({ error: "User not found" });
     }
 
-    const newUser = new User({ uid: userData.uid, email: userData.email, username: userData.displayName, profileImage: userData.photoURL });
+    const newUser = new User({
+      uid: userData.uid,
+      email: userData.email,
+      username: userData.displayName,
+      profileImage: userData.photoURL,
+    });
     await newUser.save();
     console.log(newUser);
-    res.status(201).json({ message: 'User created successfully', user: newUser });
+    res
+      .status(201)
+      .json({ message: "User created successfully", user: newUser });
   } catch (error) {
-    console.error('Error:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    console.error("Error:", error);
+    res.status(500).json({ error: "Internal server error" });
   }
 });
