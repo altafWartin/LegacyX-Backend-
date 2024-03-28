@@ -12,7 +12,7 @@ router.post("/upload", user, upload, entityController.upload);
 
 router.get("/media/:categoryId", user, entityController.getMediaByCategory);
 
-router.get("/feed", user, entityController.getAllFeed);
+router.get("/feed",  entityController.getAllFeed);
 
 // get all by user
 router.get("/user/:userId", user,  entityController.getAllByUser);

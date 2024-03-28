@@ -18,11 +18,8 @@ if (!admin.apps.length) {
   });
 }
 
-
 // // Now you can use getAuth
 // const auth = admin.auth();
-
-
 
 const { body, validationResult } = require("express-validator");
 
@@ -97,16 +94,12 @@ const authController = {
     });
   },
 
-
-
-  
   async registerUsingFirbase(req, res, next) {
     // 1.Validate user input
 
-   
     // 3.If username or email already exist__ return error
-    const {  email, device_tokens } = req.body;
-    console.log( email,  device_tokens);
+    const { email, device_tokens } = req.body;
+    console.log(email, device_tokens);
     let accessToken;
     try {
       const numberInUse = await User.exists({ email });
@@ -125,8 +118,8 @@ const authController = {
             _id: user._id,
           });
           return res.status(201).json({
-            message: 'Email already registered',
-            user:user,
+            message: "Email already registered",
+            user: user,
             token: accessToken,
           });
         }
@@ -134,18 +127,22 @@ const authController = {
     } catch (error) {
       return next(error);
     }
-  
+
     let userData;
     try {
       // 5.Store User data in db
       try {
         userData = await admin.auth().getUserByEmail(email);
       } catch (error) {
-        return res.status(404).json({ error: 'User not found' });
+        return res.status(404).json({ error: "User not found" });
       }
 
-
-      const newUser = new User({ uid: userData.uid, email: userData.email, username: userData.displayName, profileImage: userData.photoURL });
+      const newUser = new User({
+        uid: userData.uid,
+        email: userData.email,
+        username: userData.displayName,
+        profileImage: userData.photoURL,
+      });
       await newUser.save();
       console.log(newUser);
 
@@ -158,13 +155,11 @@ const authController = {
     }
 
     return res.status(201).json({
-      message: 'User created successfully',
-      user:newUser,
+      message: "User created successfully",
+      user: newUser,
       token: accessToken,
     });
   },
-
- 
 
   async login(req, res, next) {
     // 1. Validate user Input
@@ -231,6 +226,7 @@ const authController = {
 
   async loginAdmin(req, res, next) {
     // Hardcoded admin credentials
+    let user;
     const adminCredentials = {
       email: "admin@example.com",
       password: "admin123",
@@ -244,24 +240,109 @@ const authController = {
       password === adminCredentials.password
     ) {
       // Generate JWT access token
-      const accessToken = JWTService.signAccessToken({ email });
+      // const accessToken = JWTService.signAccessToken({ email });
       // You can fetch user details from the database if needed, or create a user object
-      const user = { email: adminCredentials.email }; // Here, I'm just creating a dummy user object
+      // const user = { email: adminCredentials.email }; // Here, I'm just creating a dummy user object
 
-      res
-        .status(200)
-        .json({ message: "Admin login successful", user, accessToken });
+      user = await User.findOne({ email });
+
+      if (!user) {
+        const error = {
+          status: 401,
+          message: "Invalid Email",
+        };
+        return next(error);
+      }
+
+      const accessToken = JWTService.signAccessToken({
+        _id: "65fe8482f21ddba8d3f40a6a",
+        email,
+      });
+
+      // 4. Send response
+      const userDto = new UserDTO(user);
+
+      return res.status(200).json({
+        user: { ...userDto, subscribed: subscribedProducts },
+        token: accessToken,
+      });
     } else {
       res.status(401).json({ error: "Invalid email or password" });
     }
+  },
+  async loginAdmin(req, res, next) {
+    // 1. Validate user Input
+    const { error } = validationSchema.userLoginSchema.validate(req.body);
+
+    // 2. If validation error, return error
+    if (error) {
+      return next(error);
+    }
+
+    const adminCredentials = {
+      email: "admin@example.com",
+      password: "admin123",
+    };
+    // 3. Match password and username
+    const { email, password } = req.body;
+    let user;
+
+    try {
+      user = await User.findOne({ email });
+
+      if (!user) {
+        const error = {
+          status: 401,
+          message: "Invalid Email",
+        };
+        return next(error);
+      }
+
+      if (user.email !== adminCredentials.email) {
+        const error = {
+          status: 401,
+          message: "write admin email",
+        };
+        return next(error);
+      }
+
+      const match = await bcrypt.compare(password, user.password);
+
+      if (!match) {
+        const error = {
+          status: 401,
+          message: "Invalid Password",
+        };
+        return next(error);
+      }
+    } catch (error) {
+      return next(error);
+    }
+
+  
+
+    const accessToken = JWTService.signAccessToken({
+      _id: user._id,
+      email,
+    });
+
+    // 4. Send response
+    const userDto = new UserDTO(user);
+
+    let subscribedProducts = await getDetailsByCusId(user?.stripe_customer_id);
+
+    return res.status(200).json({
+      user: { ...userDto, subscribed: subscribedProducts },
+      token: accessToken,
+    });
   },
 
   async sendNotification(req, res, next) {
     try {
       // Destructure notification details from req.body
-      const { notificationType, notificationText, userIds, } = req.body;
+      const { notificationType, notificationText, userIds } = req.body;
 
-      console.log(notificationType, notificationText, userIds,"test");
+      console.log(notificationType, notificationText, userIds, "test");
       // Fetch users' device tokens from the database
       const users = await User.find({ _id: { $in: userIds } });
       const deviceTokens = users.flatMap((user) => user.device_tokens);
@@ -470,7 +551,6 @@ const authController = {
 
     return res.status(200).json({ token: accessToken });
   },
-
   async changePassword(req, res, next) {
     // 1.Validate user Input
     const { error } = validationSchema.userConfirmPasswordSchema.validate(

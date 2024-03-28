@@ -43,10 +43,10 @@ router.post("/update-profile", auth, authController.updateProfile);
 router.post("/update-password", auth, authController.updatePassword);
 router.post("/send-notification", auth,  authController.sendNotification);
 
-router.get("/profile", auth, authController.getPorfile);
+router.get("/profile",  authController.getPorfile);
 
 router.get("/allProfile", authController.getallPorfile);
-router.get('/singleProfile/:id',auth, authController.getSingleProfile);
+router.get('/singleProfile/:id', authController.getSingleProfile);
 
 
 router.get("/delete-account", auth, authController.deleteAccount);
