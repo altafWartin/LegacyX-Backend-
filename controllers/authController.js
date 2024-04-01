@@ -52,6 +52,7 @@ const authController = {
         } else {
           accessToken = JWTService.signAccessToken({
             _id: user._id,
+            email,
           });
           return res.status(201).json({
             message: `An OTP has been sent to this ${email}, please verify`,
@@ -83,6 +84,7 @@ const authController = {
       //generate token
       accessToken = JWTService.signAccessToken({
         _id: user._id,
+        email,
       });
     } catch (error) {
       return next(error);
@@ -116,6 +118,7 @@ const authController = {
         } else {
           accessToken = JWTService.signAccessToken({
             _id: user._id,
+            email,
           });
           return res.status(201).json({
             message: "Email already registered",
@@ -149,6 +152,7 @@ const authController = {
       //generate token
       accessToken = JWTService.signAccessToken({
         _id: user._id,
+        email,
       });
     } catch (error) {
       return next(error);
@@ -318,8 +322,6 @@ const authController = {
     } catch (error) {
       return next(error);
     }
-
-  
 
     const accessToken = JWTService.signAccessToken({
       _id: user._id,

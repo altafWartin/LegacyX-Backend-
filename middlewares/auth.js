@@ -4,8 +4,8 @@ const JWTService = require("../services/JWTService");
 
 const auth = async (req, res, next) => {
   try {
-    const accessToken = req.headers.access_token;
-    console.log(accessToken,"access_token");
+    const accessToken = req.headers.authorization;
+    console.log(accessToken, "access_token");
     // 1.Validating
     if (!accessToken) {
       const error = {
