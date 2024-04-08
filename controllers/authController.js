@@ -323,10 +323,6 @@ const authController = {
       return next(error);
     }
 
-<<<<<<< HEAD
-
-=======
->>>>>>> bd5737eac47fe94d6e9d4dc03c0700e47b33d4fe
     const accessToken = JWTService.signAccessToken({
       _id: user._id,
       email,
