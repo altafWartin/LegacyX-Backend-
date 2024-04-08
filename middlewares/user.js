@@ -4,7 +4,7 @@ const JWTService = require("../services/JWTService");
 
 const user = async (req, res, next) => {
   try {
-    const accessToken = req.headers.access_token;
+    const accessToken = req.headers.authorization;
     // 1.Validating
     if (!accessToken) {
       const error = {
@@ -29,7 +29,7 @@ const user = async (req, res, next) => {
       } else {
         const error = {
           status: 401,
-          message: "Unauthorized",
+          message: "Unauthorized! email not found",
         };
         return next(error);
       }

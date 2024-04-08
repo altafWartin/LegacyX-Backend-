@@ -46,7 +46,7 @@ const entityController = {
     const path = req.uploadUrl;
     const fileName = req.fileName;
     const entityType = req.entityType;
-    const url = `${req.protocol}://${req.headers.host}/${
+    const url = `https://${req.headers.host}/${
       path?.split("/")[1]
     }/${fileName}`;
     //3. Save category in Db
