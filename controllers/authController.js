@@ -319,7 +319,6 @@ const authController = {
       return next(error);
     }
 
-  
 
     const accessToken = JWTService.signAccessToken({
       _id: user._id,
