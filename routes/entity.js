@@ -29,6 +29,9 @@ router.get("/delete-mc", entityController.deleteAllMediaAndCategory);
 // delete media by id
 router.get("/delete/:mediaId", entityController.deleteMediaById);
 
+//delete multiple media
+router.delete("/delete-multiple-media", entityController.deleteMultipleMedia);
+
 //edit
 router.get("/:entityType", user, entityController.getAll);
 

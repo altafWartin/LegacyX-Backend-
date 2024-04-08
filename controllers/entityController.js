@@ -317,8 +317,10 @@ const entityController = {
     });
   },
   async deleteAllMediaAndCategory(req, res, next) {
+    console.log("hello");
     try {
       await Media.deleteMany({});
+
       // await Category.deleteMany({});
     } catch (e) {
       console.log(e);
@@ -328,9 +330,11 @@ const entityController = {
       message: "All Media and category has been deleted",
     });
   },
-  async deleteMediaById(req, res, next) {
-    const { mediaId } = req.params;
 
+  async deleteMediaById(req, res, next) {
+    console.log("hello");
+    const { mediaId } = req.params;
+    console.log(mediaId);
     try {
       await Media.deleteMany({ _id: mediaId });
     } catch (e) {
@@ -341,6 +345,22 @@ const entityController = {
       message: "Media deleted successfully",
     });
   },
+
+  async deleteMultipleMedia(req, res, next) {
+    const { mediaIds } = req.body; // Assuming the array of IDs is sent in the request body
+    console.log(mediaIds);
+    try {
+      await Media.deleteMany({ _id: { $in: mediaIds } });
+    } catch (e) {
+      console.log(e);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  
+    return res.status(200).json({
+      message: "Multiple media items deleted successfully",
+    });
+  },
 };
+
 
 module.exports = entityController;
