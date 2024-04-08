@@ -145,6 +145,7 @@ const authController = {
         email: userData.email,
         username: userData.displayName,
         profileImage: userData.photoURL,
+        verified: true,
       });
       await newUser.save();
       console.log(newUser);
