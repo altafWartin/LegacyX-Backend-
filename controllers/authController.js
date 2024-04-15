@@ -109,23 +109,15 @@ const authController = {
       if (numberInUse) {
         const user = await User.findOne({ _id: numberInUse._id });
         console.log(user);
-        if (user.verified) {
-          const error = {
-            status: 409,
-            message: "Email already registered, choose another email!",
-          };
-          return next(error);
-        } else {
-          accessToken = JWTService.signAccessToken({
-            _id: user._id,
-            email,
-          });
-          return res.status(201).json({
-            message: "Email already registered",
-            user: user,
-            token: accessToken,
-          });
-        }
+        accessToken = JWTService.signAccessToken({
+          _id: user._id,
+          email,
+        });
+        return res.status(201).json({
+          message: "Email already registered",
+          user: user,
+          token: accessToken,
+        });
       }
     } catch (error) {
       return next(error);
