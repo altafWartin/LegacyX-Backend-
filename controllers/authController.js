@@ -221,6 +221,38 @@ const authController = {
     });
   },
 
+  async delete(req, res, next) {
+    const { userId } = req.body;
+
+    try {
+      const deletedUser = await User.findByIdAndDelete(userId);
+      if (!deletedUser) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      res.json({ message: "User deleted successfully" });
+    } catch (error) {
+      res.status(500).json({ message: "Internal server error" });
+    }
+  },
+  
+  async block(req, res, next) {
+    const { userId } = req.body;
+
+    try {
+      const blockedUser = await User.findByIdAndUpdate(
+        userId,
+        { isBlocked: true },
+        { new: true }
+      );
+      if (!blockedUser) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      res.json({ message: "User blocked successfully", user: blockedUser });
+    } catch (error) {
+      res.status(500).json({ message: "Internal server error" });
+    }
+  },
+
   async loginAdmin(req, res, next) {
     // Hardcoded admin credentials
     let user;
@@ -267,6 +299,7 @@ const authController = {
       res.status(401).json({ error: "Invalid email or password" });
     }
   },
+
   async loginAdmin(req, res, next) {
     // 1. Validate user Input
     const { error } = validationSchema.userLoginSchema.validate(req.body);

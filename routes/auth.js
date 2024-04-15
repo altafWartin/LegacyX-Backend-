@@ -26,6 +26,8 @@ router.post("/forget-password", authController.forgetPassword);
 
 //login
 router.post("/login", authController.login);
+router.post("/delete", authController.delete);
+router.post("/block", authController.block);
 
 //login Admin
 router.post("/loginAdmin", authController.loginAdmin);

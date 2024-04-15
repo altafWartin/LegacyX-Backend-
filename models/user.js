@@ -13,6 +13,7 @@ const userSchema = new Schema(
     profileImage: { type: String },
     coverImage: { type: String },
     email: { type: String },
+    isBlocked: Boolean,
     verified: { type: Boolean },
     promoCode: { type: String },
     facebook: { type: String },
