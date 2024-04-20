@@ -52,5 +52,6 @@ router.get('/singleProfile/:id', authController.getSingleProfile);
 
 
 router.get("/delete-account", auth, authController.deleteAccount);
+router.get("/subscriptionByAdmin", auth, authController.subscriptionByAdmin);
 
 module.exports = router;

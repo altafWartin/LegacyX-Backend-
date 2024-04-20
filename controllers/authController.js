@@ -256,6 +256,31 @@ const authController = {
     }
   },
 
+
+  async subscriptionByAdmin(req, res, next) {
+    try {
+      const { userId } = req.body;
+      console.log(userId)
+      // Find the user by userId and update the subscription status
+      const user = await User.findByIdAndUpdate(
+        userId,
+        { isSubscribed: true },
+        { new: true } // Return the updated document
+      );
+
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+
+      // Send a success response with the updated user data
+      res.json({ message: "User subscribed successfully", user });
+    } catch (error) {
+      console.error("Error subscribing user:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+
+  },
+
   async loginAdmin(req, res, next) {
     // Hardcoded admin credentials
     let user;
