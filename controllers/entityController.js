@@ -9,6 +9,7 @@ const LikeDto = require("../dto/like");
 const ShareDto = require("../dto/share");
 const Category = require("../models/category");
 const CategoryDto = require("../dto/category");
+const shuffle = require("lodash/shuffle");
 
 const entityController = {
   async createCategory(req, res, next) {
@@ -181,6 +182,7 @@ const entityController = {
       const newMedia = new MediaDTO(media);
       allMedia.push(newMedia);
     });
+    allMedia = shuffle(allMedia);
     return res.status(201).json({ message: "All Media", allMedia });
   },
 
@@ -355,12 +357,11 @@ const entityController = {
       console.log(e);
       return res.status(500).json({ error: "Internal server error" });
     }
-  
+
     return res.status(200).json({
       message: "Multiple media items deleted successfully",
     });
   },
 };
-
 
 module.exports = entityController;
