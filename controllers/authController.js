@@ -97,17 +97,21 @@ const authController = {
   },
 
   async registerUsingFirbase(req, res, next) {
-    // 1.Validate user input
+    // 1. Validate user input
+    // You haven't included the validation code, so assuming it's done correctly.
 
-    // 3.If username or email already exist__ return error
     const { email, device_tokens } = req.body;
     console.log(email, device_tokens);
     let accessToken;
+
     try {
-      const numberInUse = await User.exists({ email });
-      console.log(numberInUse);
-      if (numberInUse) {
-        const user = await User.findOne({ _id: numberInUse._id });
+      // 2. Check if the email already exists in your database
+      const userExists = await User.exists({ email });
+      console.log(userExists);
+
+      if (userExists) {
+        // 3. If the user exists, return an error
+        const user = await User.findOne({ email });
         console.log(user);
         accessToken = JWTService.signAccessToken({
           _id: user._id,
@@ -119,22 +123,20 @@ const authController = {
           token: accessToken,
         });
       }
-    } catch (error) {
-      return next(error);
-    }
 
-    let userData;
-    try {
-      // 5.Store User data in db
+      // 4. If the user doesn't exist, proceed to Firebase authentication
+      let userData;
       try {
         userData = await admin.auth().getUserByEmail(email);
       } catch (error) {
         return res.status(404).json({ error: "User not found" });
       }
 
+      // 5. Store User data in your database
       const newUser = new User({
         uid: userData.uid,
         email: userData.email,
+        device_tokens: device_tokens,
         username: userData.displayName,
         profileImage: userData.photoURL,
         verified: true,
@@ -142,20 +144,21 @@ const authController = {
       await newUser.save();
       console.log(newUser);
 
-      //generate token
+      // Generate token for the newly created user
       accessToken = JWTService.signAccessToken({
-        _id: user._id,
-        email,
+        _id: newUser._id,
+        email: newUser.email,
+      });
+
+      // 6. Return success response with user data and access token
+      return res.status(201).json({
+        message: "User created successfully",
+        user: newUser,
+        token: accessToken,
       });
     } catch (error) {
       return next(error);
     }
-
-    return res.status(201).json({
-      message: "User created successfully",
-      user: newUser,
-      token: accessToken,
-    });
   },
 
   async login(req, res, next) {
@@ -234,7 +237,7 @@ const authController = {
       res.status(500).json({ message: "Internal server error" });
     }
   },
-  
+
   async block(req, res, next) {
     const { userId } = req.body;
 
@@ -251,6 +254,31 @@ const authController = {
     } catch (error) {
       res.status(500).json({ message: "Internal server error" });
     }
+  },
+
+
+  async subscriptionByAdmin(req, res, next) {
+    const { userId } = req.body;
+    try {
+      console.log(userId)
+      // Find the user by userId and update the subscription status
+      const user = await User.findByIdAndUpdate(
+        userId,
+        { isSubscribed: true },
+        { new: true } // Return the updated document
+      );
+
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+
+      // Send a success response with the updated user data
+      res.json({ message: "User subscribed successfully", user });
+    } catch (error) {
+      console.error("Error subscribing user:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+
   },
 
   async loginAdmin(req, res, next) {

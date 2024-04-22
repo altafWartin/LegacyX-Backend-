@@ -28,6 +28,7 @@ router.post("/forget-password", authController.forgetPassword);
 router.post("/login", authController.login);
 router.post("/deleteUser", authController.delete);
 router.post("/blockUser", authController.block);
+router.post("/subscriptionByAdmin", authController.subscriptionByAdmin);
 
 //login Admin
 router.post("/loginAdmin", authController.loginAdmin);
@@ -52,5 +53,6 @@ router.get('/singleProfile/:id', authController.getSingleProfile);
 
 
 router.get("/delete-account", auth, authController.deleteAccount);
+
 
 module.exports = router;
