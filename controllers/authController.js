@@ -240,6 +240,7 @@ const authController = {
 
   async blockOrUnblock(req, res, next) {
     const { userId, action } = req.body;
+    console.log(userId, action);
   
     try {
       // Find the user by userId
