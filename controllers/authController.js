@@ -6,6 +6,7 @@ const JWTService = require("../services/JWTService");
 const validationSchema = require("../validation/validationSchema");
 const { sendMail } = require("../util/email");
 const stripe = require("../config/stripe");
+const Notification = require("../models/Notification"); // Import the Notification model
 
 var admin = require("firebase-admin");
 
@@ -241,15 +242,15 @@ const authController = {
   async blockOrUnblock(req, res, next) {
     const { userId, action } = req.body;
     console.log(userId, action);
-  
+
     try {
       // Find the user by userId
       const user = await User.findById(userId);
-  
+
       if (!user) {
         return res.status(404).json({ error: "User not found" });
       }
-  
+
       // Perform block or unblock based on the action parameter
       if (action === "block") {
         // Update isBlocked status to true
@@ -269,23 +270,22 @@ const authController = {
       res.status(500).json({ error: "Internal server error" });
     }
   },
-  
 
   async subscriptionByAdmin(req, res, next) {
     const { userId, action } = req.body;
     console.log("User ID:", userId);
     console.log("Action:", action);
-  
+
     try {
       // Find the user by userId
       const user = await User.findById(userId);
       console.log("User found:", user);
-  
+
       if (!user) {
         console.log("User not found");
         return res.status(404).json({ error: "User not found" });
       }
-  
+
       // Perform subscribe or unsubscribe based on the action parameter
       if (action === "false") {
         console.log("Subscribing user");
@@ -308,7 +308,6 @@ const authController = {
       res.status(500).json({ error: "Internal server error" });
     }
   },
-  
 
   async loginAdmin(req, res, next) {
     // Hardcoded admin credentials
@@ -424,15 +423,23 @@ const authController = {
 
   async sendNotification(req, res, next) {
     try {
-      // Destructure notification details from req.body
       const { notificationType, notificationText, userIds } = req.body;
 
-      console.log(notificationType, notificationText, userIds, "test");
+      // Save notifications for each user
+      const notifications = [];
+      for (const userId of userIds) {
+        const notification = new Notification({
+          userId,
+          notificationType,
+          notificationText,
+        });
+        notifications.push(notification.save());
+      }
+      await Promise.all(notifications);
+
       // Fetch users' device tokens from the database
       const users = await User.find({ _id: { $in: userIds } });
       const deviceTokens = users.flatMap((user) => user.device_tokens);
-
-      console.log(users, deviceTokens, "hh");
 
       // Prepare the FCM message
       const message = {
@@ -463,56 +470,45 @@ const authController = {
     }
   },
 
-  // async login(req, res, next) {
-  //   // 1.Validate user Input
-  //   const { error } = validationSchema.userLoginSchema.validate(req.body);
-
-  //   // 2.If validation error, return error
-  //   if (error) {
-  //     return next(error);
-  //   }
-  //   // 3.Match password and username
-  //   const { email, password, device_tokens } = req.body;
-  //   let user;
-
+  // async sendNotification(req, res, next) {
   //   try {
-  //     user = await User.findOne({ email });
+  //     // Destructure notification details from req.body
+  //     const { notificationType, notificationText, userIds } = req.body;
 
-  //     if (!user) {
-  //       const error = {
-  //         status: 401,
-  //         message: "Invalid Email",
-  //       };
-  //       return next(error);
-  //     }
+  //     console.log(notificationType, notificationText, userIds, "test");
+  //     // Fetch users' device tokens from the database
+  //     const users = await User.find({ _id: { $in: userIds } });
+  //     const deviceTokens = users.flatMap((user) => user.device_tokens);
 
-  //     const match = await bcrypt.compare(password, user.password);
+  //     console.log(users, deviceTokens, "hh");
 
-  //     if (!match) {
-  //       const error = {
-  //         status: 401,
-  //         message: "Invalid Password",
-  //       };
-  //       return next(error);
-  //     }
-  //   } catch (error) {
-  //     return next(error);
+  //     // Prepare the FCM message
+  //     const message = {
+  //       notification: {
+  //         title: notificationType,
+  //         body: notificationText,
+  //       },
+  //       tokens: deviceTokens,
+  //     };
+
+  //     // Send the push notification
+  //     admin
+  //       .messaging()
+  //       .sendMulticast(message)
+  //       .then((response) => {
+  //         console.log("Successfully sent message:", response);
+  //         return res
+  //           .status(200)
+  //           .json({ message: "Notification sent successfully" });
+  //       })
+  //       .catch((error) => {
+  //         console.error("Error sending message:", error);
+  //         return res.status(500).json({ error: "Failed to send notification" });
+  //       });
+  //   } catch (err) {
+  //     console.error("Error:", err);
+  //     return res.status(500).json({ error: "Server error" });
   //   }
-
-  //   const accessToken = JWTService.signAccessToken({
-  //     _id: user._id,
-  //     email,
-  //   });
-
-  //   // 4.Send response
-  //   const userDto = new UserDTO(user);
-
-  //   let subscribedProducts = await getDetailsByCusId(user?.stripe_customer_id);
-
-  //   return res.status(200).json({
-  //     user: { ...userDto, subscribed: subscribedProducts },
-  //     token: accessToken,
-  //   });
   // },
 
   async forgetPassword(req, res, next) {
