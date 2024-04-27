@@ -424,10 +424,15 @@ const authController = {
   async sendNotification(req, res, next) {
     try {
       const { notificationType, notificationText, userIds } = req.body;
-
+  
+      console.log("Notification Type:", notificationType);
+      console.log("Notification Text:", notificationText);
+      console.log("User IDs:", userIds);
+  
       // Save notifications for each user
       const notifications = [];
       for (const userId of userIds) {
+        console.log("Creating notification for user ID:", userId);
         const notification = new Notification({
           userId,
           notificationType,
@@ -436,11 +441,15 @@ const authController = {
         notifications.push(notification.save());
       }
       await Promise.all(notifications);
-
+  
+      console.log("Notifications saved successfully");
+  
       // Fetch users' device tokens from the database
       const users = await User.find({ _id: { $in: userIds } });
+      console.log("Fetched users:", users);
       const deviceTokens = users.flatMap((user) => user.device_tokens);
-
+      console.log("Device Tokens:", deviceTokens);
+  
       // Prepare the FCM message
       const message = {
         notification: {
@@ -449,16 +458,16 @@ const authController = {
         },
         tokens: deviceTokens,
       };
-
+  
+      console.log("FCM Message prepared:", message);
+  
       // Send the push notification
       admin
         .messaging()
         .sendMulticast(message)
         .then((response) => {
           console.log("Successfully sent message:", response);
-          return res
-            .status(200)
-            .json({ message: "Notification sent successfully" });
+          return res.status(200).json({ message: "Notification sent successfully" });
         })
         .catch((error) => {
           console.error("Error sending message:", error);
@@ -469,7 +478,7 @@ const authController = {
       return res.status(500).json({ error: "Server error" });
     }
   },
-
+  
   // async sendNotification(req, res, next) {
   //   try {
   //     // Destructure notification details from req.body
