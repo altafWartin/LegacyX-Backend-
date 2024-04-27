@@ -287,13 +287,13 @@ const authController = {
       }
   
       // Perform subscribe or unsubscribe based on the action parameter
-      if (action === "true") {
+      if (action === "false") {
         console.log("Subscribing user");
         // Update subscription status to true
         user.isSubscribed = true;
         await user.save();
         res.json({ message: "User subscribed successfully", user });
-      } else if (action === "false") {
+      } else if (action === "true") {
         console.log("Unsubscribing user");
         // Update subscription status to false
         user.isSubscribed = false;
