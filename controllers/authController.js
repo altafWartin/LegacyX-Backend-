@@ -273,28 +273,34 @@ const authController = {
 
   async subscriptionByAdmin(req, res, next) {
     const { userId, action } = req.body;
-    console.log(userId, action);
-
+    console.log("User ID:", userId);
+    console.log("Action:", action);
+  
     try {
       // Find the user by userId
       const user = await User.findById(userId);
+      console.log("User found:", user);
   
       if (!user) {
+        console.log("User not found");
         return res.status(404).json({ error: "User not found" });
       }
   
       // Perform subscribe or unsubscribe based on the action parameter
       if (action === "true") {
+        console.log("Subscribing user");
         // Update subscription status to true
         user.isSubscribed = true;
         await user.save();
         res.json({ message: "User subscribed successfully", user });
       } else if (action === "false") {
+        console.log("Unsubscribing user");
         // Update subscription status to false
         user.isSubscribed = false;
         await user.save();
         res.json({ message: "User unsubscribed successfully", user });
       } else {
+        console.log("Invalid action");
         return res.status(400).json({ error: "Invalid action" });
       }
     } catch (error) {
