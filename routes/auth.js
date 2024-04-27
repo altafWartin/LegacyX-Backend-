@@ -27,7 +27,7 @@ router.post("/forget-password", authController.forgetPassword);
 //login
 router.post("/login", authController.login);
 router.post("/deleteUser", authController.delete);
-router.post("/blockUser", authController.block);
+router.post("/blockOrUnblock", authController.blockOrUnblock);
 router.post("/subscriptionByAdmin", authController.subscriptionByAdmin);
 
 //login Admin

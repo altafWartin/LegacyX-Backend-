@@ -238,48 +238,69 @@ const authController = {
     }
   },
 
-  async block(req, res, next) {
-    const { userId } = req.body;
-
+  async blockOrUnblock(req, res, next) {
+    const { userId, action } = req.body;
+  
     try {
-      const blockedUser = await User.findByIdAndUpdate(
-        userId,
-        { isBlocked: true },
-        { new: true }
-      );
-      if (!blockedUser) {
-        return res.status(404).json({ message: "User not found" });
-      }
-      res.json({ message: "User blocked successfully", user: blockedUser });
-    } catch (error) {
-      res.status(500).json({ message: "Internal server error" });
-    }
-  },
-
-
-  async subscriptionByAdmin(req, res, next) {
-    const { userId } = req.body;
-    try {
-      console.log(userId)
-      // Find the user by userId and update the subscription status
-      const user = await User.findByIdAndUpdate(
-        userId,
-        { isSubscribed: true },
-        { new: true } // Return the updated document
-      );
-
+      // Find the user by userId
+      const user = await User.findById(userId);
+  
       if (!user) {
         return res.status(404).json({ error: "User not found" });
       }
-
-      // Send a success response with the updated user data
-      res.json({ message: "User subscribed successfully", user });
+  
+      // Perform block or unblock based on the action parameter
+      if (action === "block") {
+        // Update isBlocked status to true
+        user.isBlocked = true;
+        await user.save();
+        res.json({ message: "User blocked successfully", user });
+      } else if (action === "unblock") {
+        // Update isBlocked status to false
+        user.isBlocked = false;
+        await user.save();
+        res.json({ message: "User unblocked successfully", user });
+      } else {
+        return res.status(400).json({ error: "Invalid action" });
+      }
     } catch (error) {
-      console.error("Error subscribing user:", error);
+      console.error("Error processing block/unblock action:", error);
       res.status(500).json({ error: "Internal server error" });
     }
-
   },
+  
+
+  async subscriptionByAdmin(req, res, next) {
+    const { userId, action } = req.body;
+  
+    try {
+      // Find the user by userId
+      const user = await User.findById(userId);
+  
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+  
+      // Perform subscribe or unsubscribe based on the action parameter
+      if (action === "true") {
+        // Update subscription status to true
+        user.isSubscribed = true;
+        await user.save();
+        res.json({ message: "User subscribed successfully", user });
+      } else if (action === "false") {
+        // Update subscription status to false
+        user.isSubscribed = false;
+        await user.save();
+        res.json({ message: "User unsubscribed successfully", user });
+      } else {
+        return res.status(400).json({ error: "Invalid action" });
+      }
+    } catch (error) {
+      console.error("Error processing subscription action:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  },
+  
 
   async loginAdmin(req, res, next) {
     // Hardcoded admin credentials
