@@ -44,15 +44,14 @@ router.post("/update-profile", auth, authController.updateProfile);
 
 // update password
 router.post("/update-password", auth, authController.updatePassword);
-router.post("/send-notification", auth,  authController.sendNotification);
+router.post("/send-notification", auth, authController.sendNotification);
+router.post("/getNotification", auth, authController.getNotification);
 
-router.get("/profile",  authController.getPorfile);
+router.get("/profile", authController.getPorfile);
 
 router.get("/allProfile", authController.getallPorfile);
-router.get('/singleProfile/:id', authController.getSingleProfile);
-
+router.get("/singleProfile/:id", authController.getSingleProfile);
 
 router.get("/delete-account", auth, authController.deleteAccount);
-
 
 module.exports = router;

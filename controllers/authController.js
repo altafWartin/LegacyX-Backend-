@@ -479,6 +479,18 @@ const authController = {
     }
   },
   
+  async getNotification(req, res, next) {
+    try {
+      const { userId } = req.body;
+      const notifications = await Notification.find({ userId }); // Assuming userId is the _id of the user
+      return res.status(200).json({ notifications });
+    } catch (error) {
+      console.error('Error fetching notifications:', error);
+      throw error; // You can handle the error in the calling function
+    }
+  },
+  
+  
   // async sendNotification(req, res, next) {
   //   try {
   //     // Destructure notification details from req.body
