@@ -20,6 +20,14 @@ const app = express();
 // Allow all origins
 app.use(cors());
 
+
+const corsOptions = {
+  origin: 'https://admin.legacyx.uk',
+  // Other CORS options if needed
+};
+
+app.use(cors(corsOptions));
+
 app.post(
   "/webhook",
   express.raw({ type: "application/json" }),
