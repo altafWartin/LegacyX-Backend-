@@ -273,7 +273,8 @@ const authController = {
 
   async subscriptionByAdmin(req, res, next) {
     const { userId, action } = req.body;
-  
+    console.log(userId, action);
+
     try {
       // Find the user by userId
       const user = await User.findById(userId);
