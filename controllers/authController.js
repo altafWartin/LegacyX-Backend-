@@ -1,12 +1,12 @@
 const User = require("../models/user");
 const Media = require("../models/media");
+const Notification = require('../models/Notification');
 const bcrypt = require("bcryptjs");
 const UserDTO = require("../dto/user");
 const JWTService = require("../services/JWTService");
 const validationSchema = require("../validation/validationSchema");
 const { sendMail } = require("../util/email");
 const stripe = require("../config/stripe");
-const Notification = require("../models/Notification"); // Import the Notification model
 
 var admin = require("firebase-admin");
 
