@@ -10,6 +10,7 @@ const ShareDto = require("../dto/share");
 const Category = require("../models/category");
 const CategoryDto = require("../dto/category");
 const shuffle = require("lodash/shuffle");
+const { default: mongoose } = require("mongoose");
 
 const entityController = {
   async createCategory(req, res, next) {
@@ -255,7 +256,6 @@ const entityController = {
     // let media = await Media.find({ visibility: true, entityType });
     const allMedia = [];
     let media = [];
-    let comMedia = [];
     try {
       if (user?._id == userId) {
         media = await Media.find({
@@ -275,29 +275,46 @@ const entityController = {
         const newMedia = new MediaDTO(media);
         allMedia.push(newMedia);
       });
-      comMedia = await Media.find({}).populate("category").populate("author");
     } catch (e) {
       console.log(e);
     }
     let likedMedia = [];
     try {
-      if (comMedia.length > 0) {
-        var temp = comMedia.map(async (m) => {
-          let filterMedia = await Like.findOne({
-            media: m?.id,
-            author: userId,
-          });
-          let media = await Media.findOne({
-            author: filterMedia?.author,
-            _id: filterMedia?.media,
-          }).populate("category");
-          if (media) {
-            const newMedias = new MediaDTO(media);
-            likedMedia.push(newMedias);
-          }
-        });
-        await Promise.all(temp);
-      }
+      const likedMediaByUser = await Media.aggregate([
+        {
+          $lookup: {
+            from: "likes",
+            localField: "_id",
+            foreignField: "media",
+            as: "likes",
+          },
+        },
+        {
+          $match: {
+            "likes.author": new mongoose.Types.ObjectId(userId),
+          },
+        },
+        {
+          $lookup: {
+            from: "users",
+            localField: "author",
+            foreignField: "_id",
+            as: "author",
+          },
+        },
+        {
+          $lookup: {
+            from: "categories",
+            localField: "category",
+            foreignField: "_id",
+            as: "category",
+          },
+        },
+      ]);
+      likedMediaByUser.map((media) => {
+        const newMedia = new MediaDTO(media);
+        likedMedia.push(newMedia);
+      });
     } catch (e) {
       console.log(e);
     }

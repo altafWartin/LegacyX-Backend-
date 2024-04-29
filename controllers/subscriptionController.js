@@ -47,26 +47,30 @@ const subscriptionController = {
   },
 
   async getAll(req, res, next) {
-    let subscriptions = await stripe.products.list({
-      expand: ["data.default_price"],
-    });
+    try {
+      let subscriptions = await stripe.products.list({
+        expand: ["data.default_price"],
+      });
 
-    let data = subscriptions.data
-      .filter((e) => e.active)
-      .map((item) => ({
-        productId: item.id,
-        priceId: item?.default_price?.id,
-        name: item.name,
-        description: item.description,
-        features: item.features,
-        price: item?.default_price?.unit_amount / 100,
-        createdAt: item.created,
-        currency: item?.default_price?.currency,
-      }));
+      let data = subscriptions.data
+        .filter((e) => e.active)
+        .map((item) => ({
+          productId: item.id,
+          priceId: item?.default_price?.id,
+          name: item.name,
+          description: item.description,
+          features: item.features,
+          price: item?.default_price?.unit_amount / 100,
+          createdAt: item.created,
+          currency: item?.default_price?.currency,
+        }));
 
-    return res
-      .status(201)
-      .json({ message: "All Subscriptions", subscriptions: data });
+      return res
+        .status(201)
+        .json({ message: "All Subscriptions", subscriptions: data });
+    } catch (error) {
+      return next(error);
+    }
   },
 
   async subscribe(req, res, next) {
@@ -108,37 +112,41 @@ const subscriptionController = {
   },
 
   async cancelSubscription(req, res, next) {
-    const user = req.user;
-    // const { error } = validationSchema.createCollection.validate(req.body);
-    // if (error) {
-    //     return next(error);
-    // }
-
-    let userData = await User.findById(user._id);
-    let subscriptionId = userData?.subscribed?.[0];
-
-    if (!subscriptionId) {
-      throw new Error("No Subscription Exist");
-    }
-
     try {
-      const subscription = await stripe.subscriptions.cancel(subscriptionId);
+      const user = req.user;
+      // const { error } = validationSchema.createCollection.validate(req.body);
+      // if (error) {
+      //     return next(error);
+      // }
 
-      sendMail(
-        userData.email,
-        "We're Sorry to See You Go - Cancellation Confirmation for LXDC Premium",
-        `Hi there,\n
-We hope this message finds you well. It's with a touch of sadness that we confirm the cancellation of your LXDC Premium subscription. While we respect your decision, we'd love to hear any feedback or suggestions you might have to improve our service.\n
-If there's anything we can assist you with during this process or if you have any lingering questions, please reach out to our support team at Info@legacyx.uk\n
-Once again, thank you for being a part of LXDC Premium. We wish you all the best!\n
-        
-Sincerely,
-LXDC Team`
-      );
+      let userData = await User.findById(user._id);
+      let subscriptionId = userData?.subscribed?.[0];
 
-      return res.status(201).json({
-        message: "Subscription has been cancelled successfully.",
-      });
+      if (!subscriptionId) {
+        throw new Error("No Subscription Exist");
+      }
+
+      try {
+        const subscription = await stripe.subscriptions.cancel(subscriptionId);
+
+        sendMail(
+          userData.email,
+          "We're Sorry to See You Go - Cancellation Confirmation for LXDC Premium",
+          `Hi there,\n
+  We hope this message finds you well. It's with a touch of sadness that we confirm the cancellation of your LXDC Premium subscription. While we respect your decision, we'd love to hear any feedback or suggestions you might have to improve our service.\n
+  If there's anything we can assist you with during this process or if you have any lingering questions, please reach out to our support team at Info@legacyx.uk\n
+  Once again, thank you for being a part of LXDC Premium. We wish you all the best!\n
+          
+  Sincerely,
+  LXDC Team`
+        );
+
+        return res.status(201).json({
+          message: "Subscription has been cancelled successfully.",
+        });
+      } catch (error) {
+        return next(error);
+      }
     } catch (error) {
       return next(error);
     }

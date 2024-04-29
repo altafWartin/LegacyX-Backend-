@@ -1,5 +1,6 @@
 const User = require("../models/user");
 const Media = require("../models/media");
+const Notification = require("../models/Notification");
 const bcrypt = require("bcryptjs");
 const UserDTO = require("../dto/user");
 const JWTService = require("../services/JWTService");
@@ -238,47 +239,74 @@ const authController = {
     }
   },
 
-  async block(req, res, next) {
-    const { userId } = req.body;
+  async blockOrUnblock(req, res, next) {
+    const { userId, action } = req.body;
+    console.log(userId, action);
 
     try {
-      const blockedUser = await User.findByIdAndUpdate(
-        userId,
-        { isBlocked: true },
-        { new: true }
-      );
-      if (!blockedUser) {
-        return res.status(404).json({ message: "User not found" });
-      }
-      res.json({ message: "User blocked successfully", user: blockedUser });
-    } catch (error) {
-      res.status(500).json({ message: "Internal server error" });
-    }
-  },
-
-
-  async subscriptionByAdmin(req, res, next) {
-    const { userId } = req.body;
-    try {
-      console.log(userId)
-      // Find the user by userId and update the subscription status
-      const user = await User.findByIdAndUpdate(
-        userId,
-        { isSubscribed: true },
-        { new: true } // Return the updated document
-      );
+      // Find the user by userId
+      const user = await User.findById(userId);
 
       if (!user) {
         return res.status(404).json({ error: "User not found" });
       }
 
-      // Send a success response with the updated user data
-      res.json({ message: "User subscribed successfully", user });
+      // Perform block or unblock based on the action parameter
+      if (action === "block") {
+        // Update isBlocked status to true
+        user.isBlocked = true;
+        await user.save();
+        res.json({ message: "User blocked successfully", user });
+      } else if (action === "unblock") {
+        // Update isBlocked status to false
+        user.isBlocked = false;
+        await user.save();
+        res.json({ message: "User unblocked successfully", user });
+      } else {
+        return res.status(400).json({ error: "Invalid action" });
+      }
     } catch (error) {
-      console.error("Error subscribing user:", error);
+      console.error("Error processing block/unblock action:", error);
       res.status(500).json({ error: "Internal server error" });
     }
+  },
 
+  async subscriptionByAdmin(req, res, next) {
+    const { userId, action } = req.body;
+    console.log("User ID:", userId);
+    console.log("Action:", action);
+
+    try {
+      // Find the user by userId
+      const user = await User.findById(userId);
+      console.log("User found:", user);
+
+      if (!user) {
+        console.log("User not found");
+        return res.status(404).json({ error: "User not found" });
+      }
+
+      // Perform subscribe or unsubscribe based on the action parameter
+      if (action === "false") {
+        console.log("Subscribing user");
+        // Update subscription status to true
+        user.isSubscribed = true;
+        await user.save();
+        res.json({ message: "User subscribed successfully", user });
+      } else if (action === "true") {
+        console.log("Unsubscribing user");
+        // Update subscription status to false
+        user.isSubscribed = false;
+        await user.save();
+        res.json({ message: "User unsubscribed successfully", user });
+      } else {
+        console.log("Invalid action");
+        return res.status(400).json({ error: "Invalid action" });
+      }
+    } catch (error) {
+      console.error("Error processing subscription action:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
   },
 
   async loginAdmin(req, res, next) {
@@ -395,15 +423,32 @@ const authController = {
 
   async sendNotification(req, res, next) {
     try {
-      // Destructure notification details from req.body
       const { notificationType, notificationText, userIds } = req.body;
 
-      console.log(notificationType, notificationText, userIds, "test");
+      console.log("Notification Type:", notificationType);
+      console.log("Notification Text:", notificationText);
+      console.log("User IDs:", userIds);
+
+      // Save notifications for each user
+      const notifications = [];
+      for (const userId of userIds) {
+        console.log("Creating notification for user ID:", userId);
+        const notification = new Notification({
+          userId,
+          notificationType,
+          notificationText,
+        });
+        notifications.push(notification.save());
+      }
+      await Promise.all(notifications);
+
+      console.log("Notifications saved successfully");
+
       // Fetch users' device tokens from the database
       const users = await User.find({ _id: { $in: userIds } });
+      console.log("Fetched users:", users);
       const deviceTokens = users.flatMap((user) => user.device_tokens);
-
-      console.log(users, deviceTokens, "hh");
+      console.log("Device Tokens:", deviceTokens);
 
       // Prepare the FCM message
       const message = {
@@ -413,6 +458,8 @@ const authController = {
         },
         tokens: deviceTokens,
       };
+
+      console.log("FCM Message prepared:", message);
 
       // Send the push notification
       admin
@@ -434,56 +481,56 @@ const authController = {
     }
   },
 
-  // async login(req, res, next) {
-  //   // 1.Validate user Input
-  //   const { error } = validationSchema.userLoginSchema.validate(req.body);
+  async getNotification(req, res, next) {
+    try {
+      const { userId } = req.body;
+      const notifications = await Notification.find({ userId }); // Assuming userId is the _id of the user
+      return res.status(200).json({ notifications });
+    } catch (error) {
+      console.error("Error fetching notifications:", error);
+      throw error; // You can handle the error in the calling function
+    }
+  },
 
-  //   // 2.If validation error, return error
-  //   if (error) {
-  //     return next(error);
-  //   }
-  //   // 3.Match password and username
-  //   const { email, password, device_tokens } = req.body;
-  //   let user;
-
+  // async sendNotification(req, res, next) {
   //   try {
-  //     user = await User.findOne({ email });
+  //     // Destructure notification details from req.body
+  //     const { notificationType, notificationText, userIds } = req.body;
 
-  //     if (!user) {
-  //       const error = {
-  //         status: 401,
-  //         message: "Invalid Email",
-  //       };
-  //       return next(error);
-  //     }
+  //     console.log(notificationType, notificationText, userIds, "test");
+  //     // Fetch users' device tokens from the database
+  //     const users = await User.find({ _id: { $in: userIds } });
+  //     const deviceTokens = users.flatMap((user) => user.device_tokens);
 
-  //     const match = await bcrypt.compare(password, user.password);
+  //     console.log(users, deviceTokens, "hh");
 
-  //     if (!match) {
-  //       const error = {
-  //         status: 401,
-  //         message: "Invalid Password",
-  //       };
-  //       return next(error);
-  //     }
-  //   } catch (error) {
-  //     return next(error);
+  //     // Prepare the FCM message
+  //     const message = {
+  //       notification: {
+  //         title: notificationType,
+  //         body: notificationText,
+  //       },
+  //       tokens: deviceTokens,
+  //     };
+
+  //     // Send the push notification
+  //     admin
+  //       .messaging()
+  //       .sendMulticast(message)
+  //       .then((response) => {
+  //         console.log("Successfully sent message:", response);
+  //         return res
+  //           .status(200)
+  //           .json({ message: "Notification sent successfully" });
+  //       })
+  //       .catch((error) => {
+  //         console.error("Error sending message:", error);
+  //         return res.status(500).json({ error: "Failed to send notification" });
+  //       });
+  //   } catch (err) {
+  //     console.error("Error:", err);
+  //     return res.status(500).json({ error: "Server error" });
   //   }
-
-  //   const accessToken = JWTService.signAccessToken({
-  //     _id: user._id,
-  //     email,
-  //   });
-
-  //   // 4.Send response
-  //   const userDto = new UserDTO(user);
-
-  //   let subscribedProducts = await getDetailsByCusId(user?.stripe_customer_id);
-
-  //   return res.status(200).json({
-  //     user: { ...userDto, subscribed: subscribedProducts },
-  //     token: accessToken,
-  //   });
   // },
 
   async forgetPassword(req, res, next) {
@@ -837,7 +884,7 @@ const getDetailsByCusId = async (customer_id) => {
     );
   }
 
-  return subscribedProducts;
+  return subscribedProducts ?? [];
 };
 
 module.exports = authController;

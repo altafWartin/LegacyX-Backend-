@@ -27,7 +27,7 @@ router.post("/forget-password", authController.forgetPassword);
 //login
 router.post("/login", authController.login);
 router.post("/deleteUser", authController.delete);
-router.post("/blockUser", authController.block);
+router.post("/blockOrUnblock", authController.blockOrUnblock);
 router.post("/subscriptionByAdmin", authController.subscriptionByAdmin);
 
 //login Admin
@@ -44,15 +44,14 @@ router.post("/update-profile", auth, authController.updateProfile);
 
 // update password
 router.post("/update-password", auth, authController.updatePassword);
-router.post("/send-notification", auth,  authController.sendNotification);
+router.post("/send-notification", auth, authController.sendNotification);
+router.post("/getNotification", auth, authController.getNotification);
 
-router.get("/profile",  authController.getPorfile);
+router.get("/profile", authController.getPorfile);
 
 router.get("/allProfile", authController.getallPorfile);
-router.get('/singleProfile/:id', authController.getSingleProfile);
-
+router.get("/singleProfile/:id", authController.getSingleProfile);
 
 router.get("/delete-account", auth, authController.deleteAccount);
-
 
 module.exports = router;
