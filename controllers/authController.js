@@ -314,7 +314,7 @@ const authController = {
     let user;
     const adminCredentials = {
       email: "admin@example.com",
-      password: "admin123",
+      password: "password",
     };
     const { email, password } = req.body;
     console.log(email, password);
