@@ -22,8 +22,8 @@ app.use(cors());
 
 
 const corsOptions = {
-  // origin: 'https://admin.legacyx.uk',
-  origin: 'http://localhost:3000',
+  origin: 'https://admin.legacyx.uk',
+  // origin: 'http://localhost:3000',
   // Other CORS options if needed
 };
 
